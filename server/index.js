@@ -48,23 +48,45 @@ io.on('connection', (socket) => {
 
     // handle join room event
     socket.on('joinRoom', async (joinData) => {
+        console.log('Received joinRoom event:', joinData);
         try {
-        let user;
-        if (joinData.createUser) {
-            user = new User({ username: generateRandomUsername() });
-            await user.save();
-        }
-        const room = await Room.findByIdAndUpdate(
-            joinData.roomId,
-            { $addToSet: { users: user._id } },
-            { new: true }
-        );
-        io.emit('userJoinedRoom', { room, user }); // Send back updated room and user info
-        } catch (error) {
-        socket.emit('errorJoiningRoom', error.message);
+            let user = await User.findById(joinData.userId);
+            if (!user) {
+                user = new User({ username: generateRandomUsername() });
+                await user.save();
+            }
+            const room = await Room.findByIdAndUpdate(
+                joinData.roomId,
+                { $addToSet: { users: user._id } },
+                { new: true }
+            );
+            io.emit('userJoinedRoom', { room, user }); // Send back updated room and user info
+            } catch (error) {
+            socket.emit('errorJoiningRoom', error.message);
         }
     });
-  
+
+    // handle request for room information
+    socket.on('requestRoomDetails', async (data) => {
+        const roomId = data.roomId;
+        // fetch the room details from data store
+        const room = await Room.findById(roomId);
+        console.log('Sending room details:', room);
+        socket.emit('roomDetails', { room }); // send back room details
+    })
+
+    // handle reconnect room event
+    socket.on('reconnectRoom', async (userId) => {
+        console.log('User reconnecting:', userId);
+        const user = await User.findById(userId);
+        if (user) {
+            const room = await Room.findOne({ users: user._id });
+            if (room) {
+                console.log('Restoring room state for user:', room);
+                socket.emit('restoreRoomState', { room, user });
+            }
+        }
+    });
 });
 
 const PORT = process.env.PORT || 3000;
