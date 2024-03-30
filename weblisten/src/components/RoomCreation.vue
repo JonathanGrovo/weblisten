@@ -39,6 +39,7 @@ export default {
     socket.on('roomCreated', (data) => {
         console.log('Room created:', data.room);
         console.log('User created:', data.user);
+        this.$emit('roomCreated', data.room);
         // update the UI, store room and user data etc
     });
     
