@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <router-view></router-view>
-    <room-creation v-if="!inRoom" @roomCreated="handleRoomCreated"></room-creation>
+    <room-creation v-if="!inRoom && !isJoiningRoom" @roomCreated="handleRoomCreated"></room-creation>
   </div>
 </template>
 
@@ -12,6 +12,11 @@ import socket from './utils/socket';
 export default {
   components: {
     RoomCreation,
+  },
+  computed: {
+    isJoiningRoom() { // for controlling what user sees on room join
+      return this.$route.name === 'JoinRoom';
+    },
   },
   data() {
     return {
@@ -30,6 +35,10 @@ export default {
 
       // Define joinLink
       this.joinLink = `${window.location.origin}/join/${room._id}`;
+
+      // sets variables in session
+      sessionStorage.setItem('currentRoom', JSON.stringify(room));
+      sessionStorage.setItem('joinLink', this.joinLink);
 
       // Redirect to RoomView with room and joinLink as props
       this.$router.push({ 

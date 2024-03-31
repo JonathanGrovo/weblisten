@@ -34,12 +34,22 @@ io.on('connection', (socket) => {
     socket.on('createRoom', async (roomData) => {
         try {
         let user;
+        // for creating the user
         if (roomData.createUser) {
             user = new User({ username: generateRandomUsername() });
             await user.save();
         }
-        const room = new Room({ ...roomData, createdBy: user._id });
+        let room = new Room({ ...roomData, createdBy: user._id });
         await room.save();
+        
+        // for adding the creator to the room
+        if (user) {
+            room = await Room.findByIdAndUpdate(
+                room._id,
+                { $addToSet: { users: user._id } },
+                { new: true }
+            );
+        }
         io.emit('roomCreated', { room, user }); // Send back both room and user info
         } catch (error) {
         socket.emit('errorCreatingRoom', error.message);
@@ -87,6 +97,13 @@ io.on('connection', (socket) => {
             }
         }
     });
+
+    socket.on('disconnect', () => {
+        // LOGIC FOR REMOVAL FROM ROOM AND UPDATING DAtabase
+        const userId = socket.userId;
+        const roomId = socket.roomId;
+        removeUserFromRoom(userId, roomId);
+    })
 });
 
 const PORT = process.env.PORT || 3000;
@@ -105,8 +122,14 @@ app.get('/', (req, res) => {
     res.send('Welcome to my application!');
 });
 
+// for generating the initial username of the user
 function generateRandomUsername() {
     const prefix = 'User';
     const randomNumber = Math.floor(Math.random() * 10000);
     return `${prefix}${randomNumber}`;
+}
+
+// for removing the user from the room
+function removeUserFromRoom(userId, roomId) {
+    
 }
