@@ -37,9 +37,12 @@ export default {
   mounted() {
     // listen for the roomCreated event
     socket.on('roomCreated', (data) => {
-        console.log('Room created:', data.room);
-        console.log('User created:', data.user);
+        // sets the user and room ids of user creating room
+        sessionStorage.setItem('userId', data.user._id);
+        sessionStorage.setItem('roomId', data.room._id);
+       
         this.$emit('roomCreated', data.room);
+        
         // update the UI, store room and user data etc
     });
     

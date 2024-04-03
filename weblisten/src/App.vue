@@ -29,9 +29,7 @@ export default {
     // when a room is created
     handleRoomCreated(room) {
       this.currentRoom = room;
-      console.log('in handleRoomCreated our room is:', room.name);
       this.inRoom = true;
-      sessionStorage.setItem('currentRoom', JSON.stringify(room));
 
       // Define joinLink
       this.joinLink = `${window.location.origin}/join/${room._id}`;
@@ -40,12 +38,8 @@ export default {
       sessionStorage.setItem('currentRoom', JSON.stringify(room));
       sessionStorage.setItem('joinLink', this.joinLink);
 
-      // Redirect to RoomView with room and joinLink as props
-      this.$router.push({ 
-        name: 'RoomView', 
-        params: { roomId: room._id }, 
-        query: { joinLink: this.joinLink } 
-      });
+      // navigate the creator to their room
+      this.$router.push({ name: 'RoomView', params: { roomId: room._id } });
     },
     // when a room is exited
     handleRoomExit() {
@@ -55,12 +49,12 @@ export default {
     },
     // when a room is joined
     handleUserJoinedRoom(data) {
+
+      console.log('Session storage userId:', sessionStorage.getItem('userId'));
       this.currentRoom = data.room;
       this.inRoom = true;
-      console.log('in handleUserJoinedRoom our room is:', data.room);
+      // setting session data (idk if this is necessary)
       sessionStorage.setItem('currentRoom', JSON.stringify(data.room));
-      sessionStorage.setItem('userId', data.user._id);
-      this.$router.push({ name: 'RoomView', params: { roomId: data.room._id }}); // redirect to RoomView
     }
   },
   mounted() {

@@ -98,8 +98,12 @@ io.on('connection', (socket) => {
         }
     });
 
+    // handle leave room event
+    socket.on('leaveRoom', ({ userId, roomId }) => {
+        removeUserFromRoom(userId, roomId);
+    });
+
     socket.on('disconnect', () => {
-        // LOGIC FOR REMOVAL FROM ROOM AND UPDATING DAtabase
         const userId = socket.userId;
         const roomId = socket.roomId;
         removeUserFromRoom(userId, roomId);
@@ -131,5 +135,16 @@ function generateRandomUsername() {
 
 // for removing the user from the room
 function removeUserFromRoom(userId, roomId) {
-    
+    Room.updateOne(
+        { _id: roomId },
+        { $pull: { users: userId } } // remove the user from the users array
+    )
+    .then(() => {
+        console.log(`User ${userId} removed from room ${roomId}`);
+        // emit an event to inform other users in the room
+        io.to(roomId).emit('userLeft', { userId: userId });
+    })
+    .catch((error) => {
+        console.error(`Error removing user ${userId} from room ${roomId}:`, error);
+    });
 }
