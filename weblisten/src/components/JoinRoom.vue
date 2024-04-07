@@ -11,7 +11,7 @@ export default {
     name: 'JoinRoom',
     mounted() {
         const roomId = this.$route.params.roomId // access roomId from route parameters
-        const userId = sessionStorage.getItem('userId');
+        const userId = sessionStorage.getItem('userId'); // access userId from sessionStorage
         // telling server we want to join the room
         socket.emit('joinRoom', { roomId, userId, createUser: !userId });
 

@@ -31,12 +31,8 @@ export default {
       this.currentRoom = room;
       this.inRoom = true;
 
-      // Define joinLink
-      this.joinLink = `${window.location.origin}/join/${room._id}`;
-
       // sets variables in session
       sessionStorage.setItem('currentRoom', JSON.stringify(room));
-      sessionStorage.setItem('joinLink', this.joinLink);
 
       // navigate the creator to their room
       this.$router.push({ name: 'RoomView', params: { roomId: room._id } });

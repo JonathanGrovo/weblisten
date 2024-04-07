@@ -29,6 +29,7 @@ const io = new Server(server, {
     },
 });
 
+// when a user connects through WebSockets
 io.on('connection', (socket) => {
     // handle create room event
     socket.on('createRoom', async (roomData) => {
